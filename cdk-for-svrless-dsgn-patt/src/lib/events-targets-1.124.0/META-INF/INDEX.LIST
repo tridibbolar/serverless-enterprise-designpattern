@@ -1,0 +1,14 @@
+JarIndex-Version: 1.0
+
+events-targets-1.124.0.jar
+META-INF
+META-INF/maven
+META-INF/maven/software.amazon.awscdk
+META-INF/maven/software.amazon.awscdk/events-targets
+software
+software/amazon
+software/amazon/awscdk
+software/amazon/awscdk/services
+software/amazon/awscdk/services/events
+software/amazon/awscdk/services/events/targets
+

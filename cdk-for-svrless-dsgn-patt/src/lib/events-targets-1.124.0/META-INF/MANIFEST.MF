@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Implementation-Title: software.amazon.awscdk:events-targets
+Implementation-Version: 1.124.0
+Specification-Title: software.amazon.awscdk:events-targets
+Build-Jdk-Spec: 1.8
+Created-By: Maven Jar Plugin 3.2.0
+Specification-Version: 1.124
+
