@@ -1,18 +1,18 @@
-# Welcome to your CDK Java project!
+# Welcome to Serverless Design Pattern Java CDK project!
 
-This is a blank project for Java development with CDK.
+## To execute this project
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+* `cdk ls`: To list all stacks
+* `cdk deploy`: To deploy CloudFormation stacks from `cdk.out` folder into configured AWS environment
 
-It is a [Maven](https://maven.apache.org/) based project, so you can open this project with any Maven compatible Java IDE to build and run tests.
+## Important files 
 
-## Useful commands
-
- * `mvn package`     compile and run tests
- * `cdk ls`          list all stacks in the app
- * `cdk synth`       emits the synthesized CloudFormation template
- * `cdk deploy`      deploy this stack to your default AWS account/region
- * `cdk diff`        compare deployed stack with current state
- * `cdk docs`        open CDK documentation
+* `cdk.json`: This files contains maven compile and exec command to execute the main class. 3 programme arguments are mandatory.
+  1. Relative path for lambda layer folder (*Eg: ../pipes-filters/layer/*)
+  2. Relative path for filters' root folder (*Eg: ../pipes-filters/filters/*)
+  3. Total filter count(*Eg: 3*)
+* `CdkForSvrlessDsgnPattApp`: Main class. This class instantiate other stacks.
+* `CdkForSvrlessFilters`: Stack class to create filter lambdas. Default eventbusname is *pipe*, lambda layer name is *utility* and lambda names are f1_lambda,f2_lambda and f3_lambda lambda. User can provide custom value as a cdk command line parameter for these components.
+* `CdkForSvrlessPipes`: Stack class to create Eventbus and Rules.
 
 Enjoy!

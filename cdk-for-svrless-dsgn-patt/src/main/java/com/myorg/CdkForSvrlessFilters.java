@@ -7,6 +7,7 @@ import java.util.*;
 
 import software.amazon.awscdk.core.*;
 import software.amazon.awscdk.core.Stack;
+import software.amazon.awscdk.services.codebuild.Project;
 import software.amazon.awscdk.services.iam.Effect;
 import software.amazon.awscdk.services.iam.PolicyStatement;
 import software.amazon.awscdk.services.lambda.*;
@@ -14,18 +15,38 @@ import software.amazon.awscdk.services.lambda.Runtime;
 
 public class CdkForSvrlessFilters extends Stack {
 
-    public CdkForSvrlessFilters(final Construct scope, final String id) {
+    public CdkForSvrlessFilters(final Construct scope, final String id, final Properties projectProps) {
         super(scope, id);
-
         try {
 
-            String LayerContent = readFileAsString("../pipes-filters/layer/nodejs/utility.js");
-            List runtimes = new ArrayList();
+            String eventBusName = CfnParameter.Builder.create(this, "eventBusName")
+                    .type("String")
+                    .description("The name of the lambda layer")
+                    .defaultValue("pipe")
+                    .build().getValueAsString();
+
+            String layerName = CfnParameter.Builder.create(this, "layerName")
+                    .type("String")
+                    .description("The name of the lambda layer")
+                    .defaultValue("utility")
+                    .build().getValueAsString();
+
+            List<String> lambdaNames = CfnParameter.Builder.create(this, "lambdaNames")
+                    .type("CommaDelimitedList")
+                    .description("The name of the lambda layer")
+                    .defaultValue("f1_lambda,f2_lambda,f3_lambda")
+                    .build().getValueAsList();
+            System.out.println(lambdaNames.size());
+
+            String layerFolder = (String) projectProps.get("layerFolder");
+            String lambdaRootPath = (String) projectProps.get("lambdaRootPath");
+            List<Runtime> runtimes = new ArrayList();
             Collections.addAll(runtimes, Runtime.NODEJS_14_X, Runtime.NODEJS_12_X);
+
             final LayerVersion lambdaLayer = LayerVersion.Builder.create(this, "cdk-lambda-layer")
                     .description("Dependencies to deduce next filter")
-                    .layerVersionName("utility")
-                    .code(Code.fromAsset("../pipes-filters/layer/"))
+                    .layerVersionName(layerName)
+                    .code(Code.fromAsset(layerFolder))
                     .compatibleRuntimes(runtimes)
                     .license("MIT")
                     //.removalPolicy(RemovalPolicy.RETAIN)
@@ -34,99 +55,50 @@ public class CdkForSvrlessFilters extends Stack {
             List layers = new ArrayList();
             layers.add(lambdaLayer);
 
-            // Get the lambda function code
-            String LambdaContentFilter1 = readFileAsString("../pipes-filters/filters/filter1/index.js");
-            String LambdaContentFilter2 = readFileAsString("../pipes-filters/filters/filter2/index.js");
-            String LambdaContentFilter3 = readFileAsString("../pipes-filters/filters/filter3/index.js");
-            //List<String> filterFolders = getFolders("../pipes-filters/filters/");
-
             PolicyStatement ps = PolicyStatement.Builder.create()
                     .actions(Arrays.asList("events:PutEvents"))
                     .effect(Effect.ALLOW)
-                    .resources(Arrays.asList("arn:aws:events:us-east-1:645362674973:event-bus/pipe"))
+                    .resources(Arrays.asList("arn:aws:events:"+this.getRegion()+":"+this.getAccount()+":event-bus/"+eventBusName))
                     .build();
-            // Sample Lambda Function Resource
-            final SingletonFunction lambdaFunctionFilter1 =
-                    SingletonFunction.Builder.create(this, "cdk-lambda-filter1")
-                            .functionName("filter1_lambda")
-                            .description("My Custom Resource Lambda")
-                            .code(Code.fromInline(LambdaContentFilter1))
-                            //.code(Code.fromAsset())
-                            .handler("index.handler")
-                            .timeout(Duration.seconds(300))
-                            .runtime(Runtime.NODEJS_14_X)
-                            .layers(layers)
-                            .initialPolicy(Arrays.asList(ps))
-                            .uuid(UUID.randomUUID().toString())
-                            .build();
+            List<String> filterFolders = getFolders(projectProps.getProperty("lambdaRootPath"));
+            if (filterFolders.size()>0){
+                int i = 0;
+                for(String ff: filterFolders){
+                    String filePath = projectProps.getProperty("lambdaRootPath") + ff + "/index.js";
+                    // Get the lambda function code
+                    String LambdaContentFilter = readFileAsString(filePath);
+                    String lambdaName = Fn.select(i,lambdaNames);
 
-            final SingletonFunction lambdaFunctionFilter2 =
-                    SingletonFunction.Builder.create(this, "cdk-lambda-filter2")
-                            .functionName("filter2_lambda")
-                            .description("My Custom Resource Lambda")
-                            .code(Code.fromInline(LambdaContentFilter2))
-                            //.code(Code.fromAsset())
-                            .handler("index.handler")
-                            .timeout(Duration.seconds(300))
-                            .runtime(Runtime.NODEJS_14_X)
-                            .layers(layers)
-                            .initialPolicy(Arrays.asList(ps))
-                            .uuid(UUID.randomUUID().toString())
-                            .build();
+                    final SingletonFunction lambdaFunctionFilter =
+                            SingletonFunction.Builder.create(this, "cdk-lambda-filter"+i)
+                                    .functionName(lambdaName)
+                                    .description("My Custom Resource Lambda")
+                                    .code(Code.fromInline(LambdaContentFilter))
+                                    //.code(Code.fromAsset())
+                                    .handler("index.handler")
+                                    .timeout(Duration.seconds(300))
+                                    .runtime(Runtime.NODEJS_14_X)
+                                    .layers(layers)
+                                    .initialPolicy(Arrays.asList(ps))
+                                    .uuid(UUID.randomUUID().toString())
+                                    .build();
 
-            final SingletonFunction lambdaFunctionFilter3 =
-                    SingletonFunction.Builder.create(this, "cdk-lambda-filter3")
-                            .functionName("filter3_lambda")
-                            .description("My Custom Resource Lambda")
-                            .code(Code.fromInline(LambdaContentFilter3))
-                            //.code(Code.fromAsset())
-                            .handler("index.handler")
-                            .timeout(Duration.seconds(300))
-                            .runtime(Runtime.NODEJS_14_X)
-                            .layers(layers)
-                            .initialPolicy(Arrays.asList(ps))
-                            .uuid(UUID.randomUUID().toString())
-                            .build();
+                    CfnOutput cfnoutputFilterName =
+                            CfnOutput.Builder.create(this, "cfnoutputFilterName"+i)
+                                    .description("The message that came back from the Custom Resource")
+                                    .exportName("nameFilter"+i)
+                                    .value(lambdaFunctionFilter.getFunctionName())
+                                    .build();
+                    CfnOutput cfnoutputFilterARN =
+                            CfnOutput.Builder.create(this, "cfnoutputFilterARN"+i)
+                                    .description("The message that came back from the Custom Resource")
+                                    .exportName("arnFilter"+i)
+                                    .value(lambdaFunctionFilter.getFunctionArn())
+                                    .build();
 
-            CfnOutput cfnoutputFilterName1 =
-                    CfnOutput.Builder.create(this, "cfnoutputFilterName1")
-                            .description("The message that came back from the Custom Resource")
-                            .exportName("nameFilter1")
-                            .value(lambdaFunctionFilter1.getFunctionName())
-                            .build();
-            CfnOutput cfnoutputFilterARN1 =
-                    CfnOutput.Builder.create(this, "cfnoutputFilterARN1")
-                            .description("The message that came back from the Custom Resource")
-                            .exportName("arnFilter1")
-                            .value(lambdaFunctionFilter1.getFunctionArn())
-                            .build();
-
-            CfnOutput cfnoutputFilterName2 =
-                    CfnOutput.Builder.create(this, "cfnoutputFilterName2")
-                            .description("The message that came back from the Custom Resource")
-                            .exportName("nameFilter2")
-                            .value(lambdaFunctionFilter2.getFunctionName())
-                            .build();
-            CfnOutput cfnoutputFilterARN2 =
-                    CfnOutput.Builder.create(this, "cfnoutputFilterARN2")
-                            .description("The message that came back from the Custom Resource")
-                            .exportName("arnFilter2")
-                            .value(lambdaFunctionFilter2.getFunctionArn())
-                            .build();
-
-            CfnOutput cfnoutputFilterName3 =
-                    CfnOutput.Builder.create(this, "cfnoutputFilterName3")
-                            .description("The message that came back from the Custom Resource")
-                            .exportName("nameFilter3")
-                            .value(lambdaFunctionFilter3.getFunctionName())
-                            .build();
-            CfnOutput cfnoutputFilterARN3 =
-                    CfnOutput.Builder.create(this, "cfnoutputFilterARN3")
-                            .description("The message that came back from the Custom Resource")
-                            .exportName("arnFilter3")
-                            .value(lambdaFunctionFilter3.getFunctionArn())
-                            .build();
-
+                    i+=1;
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

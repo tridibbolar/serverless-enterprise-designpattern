@@ -1,24 +1,26 @@
-# To create layer
+# Utility file - deploy as lambda layer
 
-### To build layer zip file execute below command inside from ```layer``` folder
-```zip -r nextfilter.zip ./*```
+## Modules
+* **next_filter**: Calculate next `event.detail.target` lambda name and put event into the *eventbus*
+* **async_await**: Asynchronous wait
 
+## Note
+next_filter module produce event in the following format
+
+```
 {
-    "version": "0",
-    "id": "2f2445f1-7c99-7b3b-db09-001f8816ff4a",
-    "detail-type": "filter-type",
-    "source": "poc.dsgpatt.pf",
-    "account": "645362674973",
-    "time": "2021-10-04T07:08:16Z",
-    "region": "us-east-1",
-    "resources": [],
-    "detail": {
+    "Source": "custom.myapp",
+    "EventBusName": "pipe",
+    "DetailType": "transaction",
+    "Time": new Date(),
+    "Detail":{
         "type": "filter-1-type",
-        "target": "filter1_lambda",
+        "target": "f1_lambda",
         "filterlist": [
-            "filter1_lambda",
-            "filter2_lambda",
-            "filter3_lambda"
+            "f1_lambda",
+            "f2_lambda",
+            "f3_lambda"
         ]
     }
 }
+```
