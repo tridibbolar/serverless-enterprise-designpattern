@@ -24,3 +24,5 @@ next_filter module produce event in the following format
     }
 }
 ```
+
+`next_filter` hardcoded the `EventBusName` as _pipe_. For custom eventbus, you need to change the `EventBusName` attribute.
