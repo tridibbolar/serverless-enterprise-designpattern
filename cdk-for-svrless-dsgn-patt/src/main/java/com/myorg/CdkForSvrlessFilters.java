@@ -21,7 +21,7 @@ public class CdkForSvrlessFilters extends Stack {
 
             String eventBusName = CfnParameter.Builder.create(this, "eventBusName")
                     .type("String")
-                    .description("The name of the lambda layer")
+                    .description("The name of the event bus")
                     .defaultValue("pipe")
                     .build().getValueAsString();
 
@@ -33,7 +33,7 @@ public class CdkForSvrlessFilters extends Stack {
 
             List<String> lambdaNames = CfnParameter.Builder.create(this, "lambdaNames")
                     .type("CommaDelimitedList")
-                    .description("The name of the lambda layer")
+                    .description("The name of the lambdas")
                     .defaultValue("f1_lambda,f2_lambda,f3_lambda")
                     .build().getValueAsList();
             System.out.println(lambdaNames.size());

@@ -1,6 +1,7 @@
 package com.myorg;
 
 
+import software.amazon.awscdk.core.CfnParameter;
 import software.amazon.awscdk.core.Construct;
 import software.amazon.awscdk.core.Fn;
 import software.amazon.awscdk.core.Stack;
@@ -24,7 +25,13 @@ public class CdkForSvrlessPipes extends Stack {
         super(scope, id);
 
         try{
-            EventBus pipe = EventBus.Builder.create(this, "pipe")
+            String eventBusName = CfnParameter.Builder.create(this, "eventBusName")
+                    .type("String")
+                    .description("The name of the event bus")
+                    .defaultValue("pipe")
+                    .build().getValueAsString();
+
+            EventBus pipe = EventBus.Builder.create(this, eventBusName)
                     .eventBusName("pipe")
                     .build();
 
