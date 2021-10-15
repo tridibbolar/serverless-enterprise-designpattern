@@ -19,11 +19,11 @@ public class CdkForSvrlessFilters extends Stack {
         super(scope, id);
         try {
 
-            String eventBusName = CfnParameter.Builder.create(this, "eventBusName")
+            /*String eventBusName = CfnParameter.Builder.create(this, "eventBusName")
                     .type("String")
                     .description("The name of the event bus")
                     .defaultValue("pipe")
-                    .build().getValueAsString();
+                    .build().getValueAsString();*/
 
             String layerName = CfnParameter.Builder.create(this, "layerName")
                     .type("String")
@@ -40,6 +40,7 @@ public class CdkForSvrlessFilters extends Stack {
 
             String layerFolder = (String) projectProps.get("layerFolder");
             String lambdaRootPath = (String) projectProps.get("lambdaRootPath");
+            String eventBusName = (String) projectProps.get("eventBus");
             List<Runtime> runtimes = new ArrayList();
             Collections.addAll(runtimes, Runtime.NODEJS_14_X, Runtime.NODEJS_12_X);
 

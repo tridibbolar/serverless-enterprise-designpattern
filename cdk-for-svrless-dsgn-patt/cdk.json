@@ -1,5 +1,5 @@
 {
-  "app": "mvn -e compile exec:java -Dexec.mainClass=com.myorg.CdkForSvrlessDsgnPattApp -Dexec.args=\"../pipes-filters/layer/ ../pipes-filters/filters/ 3\"",
+  "app": "mvn -e compile exec:java -Dexec.mainClass=com.myorg.CdkForSvrlessDsgnPattApp -Dexec.args=\"../pipes-filters/layer/ ../pipes-filters/filters/ 3 mypipe\"",
   "context": {
     "@aws-cdk/aws-apigateway:usagePlanKeyOrderInsensitiveId": true,
     "@aws-cdk/core:enableStackNameDuplicates": "true",

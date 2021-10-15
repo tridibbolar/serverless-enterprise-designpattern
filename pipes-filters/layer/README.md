@@ -10,11 +10,11 @@ next_filter module produce event in the following format
 ```
 {
     "Source": "custom.myapp",
-    "EventBusName": "pipe",
-    "DetailType": "transaction",
+    "DetailType": "router",
     "Time": new Date(),
+    "EventBusName": "mypipe",
     "Detail":{
-        "type": "filter-1-type",
+        "type": "pipes_filters",
         "target": "f1_lambda",
         "filterlist": [
             "f1_lambda",

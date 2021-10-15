@@ -16,13 +16,14 @@ public class CdkForSvrlessDsgnPattApp {
         Properties projectProps = new Properties();
         projectProps.put("layerFolder", args[0]);
         projectProps.put("lambdaRootPath", args[1]);
-        int filterCount = Integer.parseInt(args[2]);
+        projectProps.put("filterCount", args[2]);
+        projectProps.put("eventBus", args[3]);
 
         /**
          * pipes-filters
          */
         new CdkForSvrlessFilters(app, "cdk-filters", projectProps);
-        new CdkForSvrlessPipes(app, "cdk-pipes", filterCount);
+        new CdkForSvrlessPipes(app, "cdk-pipes", projectProps);
         app.synth();
     }
 }

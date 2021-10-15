@@ -21,18 +21,21 @@ import software.amazon.awscdk.services.lambda.eventsources.SqsEventSource;
 import java.util.*;
 
 public class CdkForSvrlessPipes extends Stack {
-    public CdkForSvrlessPipes(final Construct scope, final String id, int filterCount) {
+    public CdkForSvrlessPipes(final Construct scope, final String id, final Properties projectProps) {
         super(scope, id);
 
         try{
-            String eventBusName = CfnParameter.Builder.create(this, "eventBusName")
+            /*String eventBusName = CfnParameter.Builder.create(this, "eventBusName")
                     .type("String")
                     .description("The name of the event bus")
                     .defaultValue("pipe")
-                    .build().getValueAsString();
+                    .build().getValueAsString();*/
 
-            EventBus pipe = EventBus.Builder.create(this, eventBusName)
-                    .eventBusName("pipe")
+            int filterCount = Integer.parseInt((String)projectProps.get("filterCount"));
+            String eventBusName = (String)projectProps.get("eventBus");
+
+            EventBus pipe = EventBus.Builder.create(this, "pipe")
+                    .eventBusName(eventBusName)
                     .build();
 
             for (int i=0;i<filterCount;i++){
@@ -40,8 +43,12 @@ public class CdkForSvrlessPipes extends Stack {
                 String arnFilter = Fn.importValue("arnFilter"+i);
                 Map<String, List<String>> detailRule = new HashMap<>();
                 detailRule.put("target", Arrays.asList(nameFilter));
+                detailRule.put("type", Arrays.asList("pipes_filters"));
                 EventPattern patternRule = EventPattern.builder()
                         .detail(detailRule)
+                        .detailType(Arrays.asList("router"))
+                        .source(Arrays.asList("custom.myapp"))
+                        //.time(Arrays.asList(new Date().toString()))
                         //.account(Arrays.asList("014725595236"))
                         //.version(Arrays.asList("0"))
                         //.detailType(Arrays.asList("filter-type"))
